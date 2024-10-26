@@ -14,3 +14,4 @@ def get_products():
 @app.get("/productos/capy")
 def get_products():
     return {"productos": "capy"}
+    return {"productos": "pera"}
