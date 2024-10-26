@@ -9,3 +9,8 @@ def read_root():
 @app.get("/productos")
 def get_products():
     return {"productos": "platano"}
+
+
+@app.get("/productos/capy")
+def get_products():
+    return {"productos": "capy"}
