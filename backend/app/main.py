@@ -8,4 +8,4 @@ def read_root():
 
 @app.get("/productos")
 def get_products():
-    return {"productos": "manzana"}
+    return {"productos": "platano"}
