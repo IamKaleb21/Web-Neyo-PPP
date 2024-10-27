@@ -1,10 +1,6 @@
-from fastapi import FastAPI
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, UniqueConstraint
+from sqlalchemy import create_engine, text, Column, Integer, String, DateTime, UniqueConstraint
 from sqlalchemy.orm import sessionmaker, declarative_base
 import datetime
-
-# Inicializa la aplicación FastAPI
-app = FastAPI()
 
 # Ruta de la base de datos
 db_path = 'C:\\Users\\Carlos\\Desktop\\Proyectos\\Web-Neyo-PPP\\backend\\bd\\miProyecto.db'
@@ -33,36 +29,25 @@ class Usuario(Base):
     Direccion = Column(String(50), nullable=False)
     Correo = Column(String(50), unique=True, nullable=False)
 
+    # Restricciones de unicidad
     __table_args__ = (
         UniqueConstraint("Usuario", "Clave", "Correo", name="uq_usuario_clave_correo"),
-        {'extend_existing': True}
+        {'extend_existing': True}  # Agregar esta línea
     )
 
-# Crear la tabla si no existe
-Base.metadata.create_all(bind=engine)
+# Prueba la conexión ejecutando una consulta (por ejemplo, seleccionando los nombres de las tablas)
+with engine.connect() as connection:
+    result = connection.execute(text("SELECT name FROM sqlite_master WHERE type='table';"))
+    print("Tablas en la base de datos:", [row[0] for row in result])
 
-@app.get("/usuarios")
-def get_usuarios():
-    with LocalSession() as session:
-        # Consultar todos los registros de la tabla USUARIO
-        usuarios = session.query(Usuario).all()
-        # Crear una lista para retornar
-        return [
-            {
-                "ID": usuario.IdUsuario,
-                "Usuario": usuario.Usuario,
-                "Nombre": usuario.Nombre,
-                "Apellido": usuario.Apellido,
-                "Fecha_registro": usuario.Fecha_registro,
-                "Departamento": usuario.Departamento,
-                "Provincia": usuario.Provincia,
-                "Distrito": usuario.Distrito,
-                "Direccion": usuario.Direccion,
-                "Correo": usuario.Correo,
-            }
-            for usuario in usuarios
-        ]
+# Consultar y mostrar todos los registros de la tabla usuarios
+with LocalSession() as session:
+    # Crear la tabla si no existe
+    Base.metadata.create_all(bind=engine)
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    # Consultar todos los registros de la tabla USUARIO
+    usuarios = session.query(Usuario).all()  # Recupera todos los registros de la tabla USUARIO
+    
+    # Muestra los registros
+    for usuario in usuarios:
+        print(f"ID: {usuario.IdUsuario}, Usuario: {usuario.Usuario}, Nombre: {usuario.Nombre}, Apellido: {usuario.Apellido} ")
