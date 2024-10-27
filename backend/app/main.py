@@ -4,6 +4,8 @@ from models.conexion import LocalSession  # Importar la sesión de la base de da
 from models.Usuarios import Usuario
 from Schemas.Usuario import UsuarioId, UsuarioData
 import datetime
+import hashlib
+
 # Inicializa la aplicación FastAPI
 app = FastAPI()
 
@@ -75,4 +77,40 @@ def crear_usuario(user: UsuarioData, db: Session = Depends(get_db)):
         "Distrito": new_user.Distrito,
         "Direccion": new_user.Direccion,
         "Correo": new_user.Correo
+    }
+
+
+@app.put("/actualizarUsuario/{id}")
+def actualizar_usuario(id: int, user: UsuarioData, db: Session = Depends(get_db)):
+    # Buscar el usuario por ID
+    usuario = db.query(Usuario).filter(Usuario.IdUsuario == id).first()
+    if usuario is None:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Actualizar los campos del usuario con los nuevos valores
+    usuario.Usuario = user.Usuario
+    usuario.Nombre = user.Nombre
+    usuario.Apellido = user.Apellido
+    usuario.Departamento = user.Departamento
+    usuario.Provincia = user.Provincia
+    usuario.Distrito = user.Distrito
+    usuario.Direccion = user.Direccion
+    usuario.Correo = user.Correo
+    if user.Clave:
+        usuario.Clave = user.Clave + '#fake'  # Recuerda manejar la contraseña de manera segura
+
+    # Guardar los cambios en la base de datos
+    db.commit()
+    db.refresh(usuario)  # Recargar el usuario para obtener el estado actualizado
+
+    return {
+        "ID": usuario.IdUsuario,
+        "Usuario": usuario.Usuario,
+        "Nombre": usuario.Nombre,
+        "Apellido": usuario.Apellido,
+        "Departamento": usuario.Departamento,
+        "Provincia": usuario.Provincia,
+        "Distrito": usuario.Distrito,
+        "Direccion": usuario.Direccion,
+        "Correo": usuario.Correo
     }
