@@ -1,26 +1,14 @@
-from fastapi import FastAPI
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, UniqueConstraint
-from sqlalchemy.orm import sessionmaker, declarative_base
+# main.py
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from models.conexion import LocalSession, Base
+from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint
 import datetime
-
-# Inicializa la aplicación FastAPI
-app = FastAPI()
-
-# Ruta de la base de datos
-db_path = 'C:\\Users\\Carlos\\Desktop\\Proyectos\\Web-Neyo-PPP\\backend\\bd\\miProyecto.db'
-
-# Crea la conexión
-engine = create_engine(f'sqlite:///{db_path}')
-
-# Crea una sesión para interactuar con la base de datos
-LocalSession = sessionmaker(autoflush=False, autocommit=False, bind=engine)
-
-Base = declarative_base()
 
 # Definición del modelo Usuario
 class Usuario(Base):
     __tablename__ = "USUARIO"
-    
+
     IdUsuario = Column(Integer, primary_key=True, index=True)
     Usuario = Column(String(30), unique=True, nullable=False)
     Clave = Column(String(30), unique=True, nullable=False)
@@ -33,34 +21,26 @@ class Usuario(Base):
     Direccion = Column(String(50), nullable=False)
     Correo = Column(String(50), unique=True, nullable=False)
 
+    # Restricciones de unicidad
     __table_args__ = (
         UniqueConstraint("Usuario", "Clave", "Correo", name="uq_usuario_clave_correo"),
-        {'extend_existing': True}
     )
 
 # Crear la tabla si no existe
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=LocalSession().bind)
 
-@app.get("/usuarios")
-def get_usuarios():
-    with LocalSession() as session:
-        # Consultar todos los registros de la tabla USUARIO
-        usuarios = session.query(Usuario).all()
-        # Crear una lista para retornar
-        return [
-            {
-                "ID": usuario.IdUsuario,
-                "Usuario": usuario.Usuario,
-                "Nombre": usuario.Nombre,
-                "Apellido": usuario.Apellido,
-                "Fecha_registro": usuario.Fecha_registro,
-                "Departamento": usuario.Departamento,
-                "Provincia": usuario.Provincia,
-                "Distrito": usuario.Distrito,
-                "Direccion": usuario.Direccion,
-                "Correo": usuario.Correo,
-            }
-            for usuario in usuarios
-        ]
+app = FastAPI()
 
+# Dependency to get the database session
+def get_db():
+    db = LocalSession()
+    try:
+        yield db
+    finally:
+        db.close()
 
+@app.get("/usuarios/")
+def read_usuarios(db: Session = Depends(get_db)):
+    # Consultar todos los registros de la tabla USUARIO
+    usuarios = db.query(Usuario).all()  # Recupera todos los registros de la tabla USUARIO
+    return [{"ID": usuario.IdUsuario, "Usuario": usuario.Usuario, "Nombre": usuario.Nombre, "Apellido": usuario.Apellido} for usuario in usuarios]
