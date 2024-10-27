@@ -5,6 +5,10 @@ from models.conexion import LocalSession, Base
 from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint
 import datetime
 
+# Inicializa la aplicación FastAPI
+app = FastAPI()
+
+
 # Definición del modelo Usuario
 class Usuario(Base):
     __tablename__ = "USUARIO"
