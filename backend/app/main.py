@@ -6,8 +6,11 @@ import datetime
 # Inicializa la aplicación FastAPI
 app = FastAPI()
 
-# Ruta de la base de datos
-db_path = 'C:\\Users\\Carlos\\Desktop\\Proyectos\\Web-Neyo-PPP\\backend\\bd\\miProyecto.db'
+# Ruta de la base de datos - Linux
+db_path = '../bd/miProyecto.db'
+
+# Ruta de la base de datos - Windows
+# db_path = '..\\bd\\miProyecto.db'
 
 # Crea la conexión
 engine = create_engine(f'sqlite:///{db_path}')

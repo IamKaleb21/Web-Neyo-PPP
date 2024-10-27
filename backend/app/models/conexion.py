@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 import datetime
 
 # Ruta de la base de datos
-db_path = 'C:\\Users\\Carlos\\Desktop\\Proyectos\\Web-Neyo-PPP\\backend\\bd\\miProyecto.db'
+db_path = '..\\..\\bd\\miProyecto.db'
 
 # Crea la conexión
 engine = create_engine(f'sqlite:///{db_path}')
