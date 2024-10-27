@@ -21,7 +21,7 @@ class Usuario(Base):
     Distrito = Column(String(50), nullable=False)
     Direccion = Column(String(50), nullable=False)
     Correo = Column(String(50), unique=True, nullable=False)
-
+    
     # Restricciones de unicidad
     __table_args__ = (
         UniqueConstraint("Usuario", "Clave", "Correo", name="uq_usuario_clave_correo"),
