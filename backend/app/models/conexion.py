@@ -1,9 +1,9 @@
-# librerias necesario
-from supabase import create_client, Client
-from decouple import config
-#Parametros url, key de un nuevo proyecto 
-url = config("SUPERBASE_URL")
-key = config ("SUPERBASE_KEY")
+from dotenv import load_dotenv
+load_dotenv()
 
-# Inicializar un nuevo cliente Supabase 
-supabase: Client = create_client(url, key)
+import os
+from supabase import create_client
+
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
+supabase = create_client(url, key)
