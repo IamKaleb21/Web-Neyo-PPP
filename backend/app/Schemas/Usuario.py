@@ -1,19 +1,23 @@
-from pydantic import BaseModel, EmailStr, constr
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
+from enum import Enum
+
+class RolUsuario(Enum):
+    Admin = 1
+    prueba = 2
 
 class UsuarioData(BaseModel):
-    Usuario: str  
-    Clave: str  
-    Nombre: str  
-    Apellido: str  
-    Fecha_registro: Optional[datetime] = None  
-    Departamento: str
-    Provincia: str  
-    Distrito: str  
-    Direccion: str  
-    Correo: EmailStr  
-    
-class UsuarioId(UsuarioData):
-    id : int
+    usuario: str  
+    clave: str  
+    nombre: str  
+    apellido: str  
+    fecha_registro: Optional[datetime] = None  
+    departamento: str
+    provincia: str  
+    distrito: str  
+    direccion: str  
+    correo: EmailStr
+    id_rol : RolUsuario = RolUsuario.prueba
+
 

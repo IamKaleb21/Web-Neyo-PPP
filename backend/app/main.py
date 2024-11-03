@@ -1,116 +1,88 @@
 from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from models.conexion import LocalSession  # Importar la sesión de la base de datos
-from models.Usuarios import Usuario
-from Schemas.Usuario import UsuarioId, UsuarioData
-import datetime
-import hashlib
+from models.conexion import supabase  # Importar la sesión de la base de datos
+from Schemas.Usuario import UsuarioData
+from datetime import datetime
+
+
 
 # Inicializa la aplicación FastAPI
 app = FastAPI()
 
-# Dependency to get the database session
-def get_db():
-    db = LocalSession()
-    try:
-        yield db
-    finally:
-        db.close()
+@app.get("/")
+def read_usuarios():
+    return {
+        "hola" :"usuario1"
+    }        
 
 @app.get("/usuarios/")
-def read_usuarios(db: Session = Depends(get_db)):
-    # Consultar todos los registros de la tabla USUARIO
-    usuarios = db.query(Usuario).all()  # Recupera todos los registros de la tabla USUARIO
-    return [{"ID": usuario.IdUsuario, "Usuario": usuario.Usuario, "Nombre": usuario.Nombre, "Apellido": usuario.Apellido} for usuario in usuarios]
+def read_usuarios():
+    informacion = supabase.table("usuario").select("*").execute()
+    return informacion    
 
-@app.get("/usuario/{id:int}")  # Asegúrate de que la ruta esté bien definida
-def read_usuario(id: int, db: Session = Depends(get_db)):  # Define el tipo de id
-    usuario = db.query(Usuario).filter(Usuario.IdUsuario == id).first()  # Llama a first() correctamente
-    if usuario is None:  # Manejo de caso en que no se encuentra el usuario
+@app.get("/usuario/{id:int}")  
+def read_usuario(id: int):  
+    usuario = supabase.table("usuario").select("*").eq("id_usuario",id).execute()
+    
+    if not usuario.data :
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    return {
-        "ID": usuario.IdUsuario,
-        "Usuario": usuario.Usuario,
-        "Nombre": usuario.Nombre,
-        "Apellido": usuario.Apellido,
-        "Departamento": usuario.Departamento,
-        "Provincia": usuario.Provincia,
-        "Distrito": usuario.Distrito,
-        "Direccion": usuario.Direccion,
-        "Correo": usuario.Correo
-    }
+    else :
+        return usuario
 
-@app.post("/ingresarUsuario", response_model=UsuarioId)
-def crear_usuario(user: UsuarioData, db: Session = Depends(get_db)):
-    # Verificar si el usuario ya existe
-    existing_user = db.query(Usuario).filter(Usuario.Usuario == user.Usuario).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="El usuario ya existe")
+@app.post("/ingresarUsuario/")
+def ingresar_usuario(user: UsuarioData):
+    user.fecha_registro = datetime.now()
+    usuario = supabase.table("usuario").insert({
+        "usuario": user.usuario,
+        "clave": user.clave,
+        "nombre": user.nombre,
+        "apellido": user.apellido,
+        "fecha_registro" : user.fecha_registro.strftime("%Y-%m-%dT%H:%M:%S"),
+        "departamento" : user.departamento,
+        "provincia" : user.provincia,
+        "distrito" : user.distrito,
+        "direccion" : user.direccion,
+        "correo" : user.correo,
+        "id_rol" : user.id_rol.value
+    }).execute()
 
-    # Encriptar la clave usando hashlib
-    hashed_password = hashlib.sha256(user.Clave.encode()).hexdigest()
-
-    new_user = Usuario(
-        Usuario=user.Usuario,
-        Clave=hashed_password,
-        Nombre=user.Nombre,
-        Apellido=user.Apellido,
-        Fecha_registro=user.Fecha_registro or datetime.utcnow(),
-        Departamento=user.Departamento,
-        Provincia=user.Provincia,
-        Distrito=user.Distrito,
-        Direccion=user.Direccion,
-        Correo=user.Correo
-    )
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)  # Refresca la instancia de nuevo usuario
-
-    return {
-        "id": new_user.IdUsuario,
-        "Usuario": new_user.Usuario,
-        "Nombre": new_user.Nombre,
-        "Apellido": new_user.Apellido,
-        "Departamento": new_user.Departamento,
-        "Provincia": new_user.Provincia,
-        "Distrito": new_user.Distrito,
-        "Direccion": new_user.Direccion,
-        "Correo": new_user.Correo
-    }
-
+    return usuario
 
 @app.put("/actualizarUsuario/{id}")
-def actualizar_usuario(id: int, user: UsuarioData, db: Session = Depends(get_db)):
-    # Buscar el usuario por ID
-    usuario = db.query(Usuario).filter(Usuario.IdUsuario == id).first()
-    if usuario is None:
+def actualizar_usuario(id : int, user: UsuarioData):
+    user.fecha_registro = datetime.now()
+    bandera = False
+    id_usuarios = supabase.table("usuario").select("id_usuario").execute()
+    for usuario in id_usuarios.data:
+        if id == usuario["id_usuario"] :
+            bandera = True
+    if bandera == True : 
+        usuario_actualizado = supabase.table("usuario").update({
+            "usuario": user.usuario,
+            "clave": user.clave,
+            "nombre": user.nombre,
+            "apellido": user.apellido,
+            "fecha_registro" : user.fecha_registro.strftime("%Y-%m-%dT%H:%M:%S"),
+            "departamento" : user.departamento,
+            "provincia" : user.provincia,
+            "distrito" : user.distrito,
+            "direccion" : user.direccion,
+            "correo" : user.correo,
+            "id_rol" : user.id_rol.value
+        }).eq("id_usuario",id).execute()
+        return usuario_actualizado
+    else :
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    # Actualizar los campos del usuario con los nuevos valores
-    usuario.Usuario = user.Usuario
-    usuario.Nombre = user.Nombre
-    usuario.Apellido = user.Apellido
-    usuario.Departamento = user.Departamento
-    usuario.Provincia = user.Provincia
-    usuario.Distrito = user.Distrito
-    usuario.Direccion = user.Direccion
-    usuario.Correo = user.Correo
-    if user.Clave:
-        usuario.Clave = user.Clave + '#fake'  # Recuerda manejar la contraseña de manera segura
-
-    # Guardar los cambios en la base de datos
-    db.commit()
-    db.refresh(usuario)  # Recargar el usuario para obtener el estado actualizado
-
-    return {
-        "ID": usuario.IdUsuario,
-        "Usuario": usuario.Usuario,
-        "Nombre": usuario.Nombre,
-        "Apellido": usuario.Apellido,
-        "Departamento": usuario.Departamento,
-        "Provincia": usuario.Provincia,
-        "Distrito": usuario.Distrito,
-        "Direccion": usuario.Direccion,
-        "Correo": usuario.Correo
-    }
+@app.delete("/eliminarUsuario/{id}")
+def eliminar_usuario(id : int):
+    bandera = False
+    id_usuarios = supabase.table("usuario").select("id_usuario").execute()
+    for usuario in id_usuarios.data:
+        if id == usuario["id_usuario"] :
+            bandera = True
+    if bandera == True :
+        usuarioEliminado = supabase.table("usuario").delete().eq("id_usuario",id).execute()
+        return usuarioEliminado 
+    else :
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
