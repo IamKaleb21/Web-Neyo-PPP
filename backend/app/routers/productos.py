@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from Schemas.Producto import ProductoData
 from controllers.productos_controller import ProductoController
 
-productos =APIRouter(prefix="/productos",
+productos = APIRouter(prefix="/productos",
                      tags=["Productos"],
                      responses={404: {"mensaje" : "No encontrado"}})
 
