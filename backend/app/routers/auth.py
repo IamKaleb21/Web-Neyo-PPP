@@ -1,18 +1,26 @@
-# routers/auth.py
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from Schemas.Auth import LoginRequest
 from controllers.auth_controller import AuthController
+import logging
 
-# Configuración del router de autenticación
-auth = APIRouter(
+auth_router = APIRouter(
     prefix="/auth",
     tags=["Autenticación"],
     responses={404: {"message": "No encontrado"}}
 )
 
-# Instancia del controlador de autenticación
 auth_controller = AuthController()
 
-@auth.post("/login")
-def login(request: LoginRequest):
-    return auth_controller.iniciar_sesion(request.email, request.password)
+@auth_router.post("/login")
+async def login(request: LoginRequest):
+    logging.info(f"Solicitud de login recibida para el correo: {request.email}")
+    try:
+        response = auth_controller.iniciar_sesion(request.email, request.password)
+        logging.info("Login exitoso")
+        return response
+    except HTTPException as e:
+        logging.error(f"Error en el login: {e.detail}")
+        raise e
+    except Exception as e:
+        logging.error(f"Error en el servidor: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error en el servidor")

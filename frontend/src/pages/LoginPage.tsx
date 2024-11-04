@@ -1,5 +1,6 @@
 // src/pages/LoginPage.tsx
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Input from '../components/Input'
 import Button from '../components/Button'
 
@@ -8,14 +9,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError(null) // Reiniciar el mensaje de error antes de cada intento de login
+    setError(null)
 
     try {
-      // Realizar solicitud al backend usando fetch
       const response = await fetch("http://localhost:8000/auth/login", {
         method: "POST",
         headers: {
@@ -24,20 +25,18 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
 
-      // Si la respuesta no es exitosa, lanzar un error
       if (!response.ok) {
         const errorData = await response.json()
         setError(errorData.detail || 'Error en el inicio de sesión')
         return
       }
 
-      // Obtener los tokens del backend y almacenarlos en localStorage
       const data = await response.json()
       localStorage.setItem("access_token", data.access_token)
       localStorage.setItem("refresh_token", data.refresh_token)
 
-      // Aquí podrías redirigir al usuario o actualizar el estado de la app
-      console.log("Sesión iniciada con éxito")
+      // Redirigir al Dashboard con el correo del usuario
+      navigate("/dashboard", { state: { email } })
 
     } catch (err) {
       setError('Error de red o servidor')
