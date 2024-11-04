@@ -20,3 +20,4 @@ const Input = ({ label, error, ...props }: InputProps) => (
 )
 
 export default Input
+

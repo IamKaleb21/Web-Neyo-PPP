@@ -1,44 +1,37 @@
-// src/pages/LoginPage.tsx
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import Input from '../components/Input'
 import Button from '../components/Button'
 
-export default function LoginPage() {
+export default function RecuperarPasswordPage() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError(null) // Reiniciar el mensaje de error antes de cada intento de login
+    setMessage(null)
+    setError(null)
 
     try {
-      // Realizar solicitud al backend usando fetch
-      const response = await fetch("http://localhost:8000/auth/login", {
+      const response = await fetch("http://localhost:8000/auth/recuperar-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email }),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        setError(errorData.detail || 'Error en el inicio de sesión')
+        setError(errorData.detail || 'Error al enviar el enlace de recuperación')
         return
       }
 
-      // Obtener los datos de la respuesta
+      // Si la solicitud fue exitosa, mostrar mensaje de confirmación
       const data = await response.json()
-      localStorage.setItem("access_token", data.access_token)
-      localStorage.setItem("refresh_token", data.refresh_token)
-
-      // Redirigir al Dashboard con el email del usuario
-      navigate("/dashboard", { state: { email } })
+      setMessage(data.message)
 
     } catch (err) {
       setError('Error de red o servidor')
@@ -51,7 +44,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Iniciar sesión en AutoPartes
+          Recuperar Contraseña
         </h2>
       </div>
 
@@ -70,22 +63,11 @@ export default function LoginPage() {
               error={error}
             />
 
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              label="Contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={error}
-            />
-
+            {message && <p className="text-green-600 text-sm">{message}</p>}
             {error && <p className="text-red-600 text-sm">{error}</p>}
 
             <Button type="submit" disabled={loading}>
-              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
             </Button>
           </form>
         </div>

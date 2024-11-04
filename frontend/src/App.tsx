@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import Dashboard from './pages/Dashboard'
+import RecuperarPasswordPage from './pages/RecuperarPasswordPage'
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
