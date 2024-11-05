@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from config.conexion import supabase
 import logging
+from Schemas.Auth import UpdatePasswordRequest
 
 class AuthController:
     def iniciar_sesion(self, email: str, password: str):
@@ -29,4 +30,17 @@ class AuthController:
 
         except Exception as e:
             logging.error(f"Error en el servidor al intentar iniciar sesión: {str(e)}")
+            raise HTTPException(status_code=500, detail="Error en el servidor")
+        
+    def actualizar_password(self, request: UpdatePasswordRequest):
+        try:        
+            # Actualiza la contraseña del usuario
+            response = supabase.auth.update_user({
+                "password": request.new_password
+            })    
+            # Imprimir la respuesta para depuración
+            print(response)
+            return {"mensaje": "Contraseña actualizada exitosamente"}
+        except Exception as e:
+            print(f"Error: {e}")
             raise HTTPException(status_code=500, detail="Error en el servidor")
