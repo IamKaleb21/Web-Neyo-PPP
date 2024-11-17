@@ -29,7 +29,32 @@ def ingresar_usuario_funcion(user: UsuarioData):
         "correo" : user.correo,
         "id_rol" : user.id_rol.value
     }).execute()
-    return usuario
+    usuario_data = usuario.data[0]
+    print(usuario_data['id_usuario'])
+    
+    # Ingresas a un nuevo usuario en Auth cuando te registras
+    usuarioAut=supabase.auth.sign_up( 
+        {
+            "email" : user.correo,
+            "password" : user.clave,
+            "options" : {
+                "data" : {
+                    "Nombre" : user.nombre,
+                    "Apellido" : user.apellido,
+                    "Departamento" : user.departamento,
+                    "Provincia" : user.provincia,
+                    "Distrito" : user.distrito,
+                }
+            }
+        }
+    )
+    usuarioFinal = (
+    supabase.table("usuario")
+    .update({"principal": usuarioAut.user.id})
+    .eq("id_usuario", usuario_data['id_usuario'])
+    .execute())
+    
+    return usuarioFinal
 
 def actualizar_usuario_funcion(id: int, user : UsuarioData):
     user.fecha_registro = datetime.now()

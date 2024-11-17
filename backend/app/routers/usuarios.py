@@ -11,11 +11,9 @@ usuarios = APIRouter(prefix="/usuarios",
 def read_usuarios():
     return leer_usuarios_funcion() 
 
-
 @usuarios.get("/{id:int}")
 def read_usuario(id: int):
     return leer_usuario_funcion(id)
-
 
 @usuarios.post("/ingresarUsuario/")
 def ingresar_usuario(user : UsuarioData):

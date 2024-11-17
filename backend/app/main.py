@@ -4,6 +4,7 @@ from routers.usuarios import usuarios
 from fastapi.middleware.cors import CORSMiddleware
 from routers.productos import productos
 from routers import auth
+from routers.Comentario import comentario
 
 # Inicializa la aplicación FastAPI
 app = FastAPI()
@@ -21,15 +22,14 @@ app.add_middleware(
     allow_methods=["*"],              # Permite todos los métodos HTTP (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],              # Permite todos los encabezados
 )
+#Hacer que la aplicación incluya las rutas que vienen de usuarios
 
-
-#  Hacer que la aplicación incluya las rutas que vienen de usuarios
 app.include_router(usuarios)
 app.include_router(productos)
 app.include_router(auth.auth_router)
-
-
+app.include_router(comentario)
 @app.get("/")
+
 def read_usuarios():
     return {
         "hola" :"usuario2"
