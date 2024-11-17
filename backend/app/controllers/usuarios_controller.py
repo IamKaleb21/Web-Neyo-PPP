@@ -3,6 +3,10 @@ from fastapi import HTTPException
 from Schemas.Usuario import UsuarioData
 from datetime import datetime
 
+from controllers.carrito_controller import CarritoController
+
+carrito_controller = CarritoController()
+
 # Crud de Usuarios 
 def leer_usuarios_funcion():
     usuarios = supabase.table("usuario").select("*").execute()
@@ -31,6 +35,8 @@ def ingresar_usuario_funcion(user: UsuarioData):
     }).execute()
     usuario_data = usuario.data[0]
     print(usuario_data['id_usuario'])
+    
+    carrito_controller.crear_carrito(usuario_data["id_usuario"])
     
     # Ingresas a un nuevo usuario en Auth cuando te registras
     usuarioAut=supabase.auth.sign_up( 
