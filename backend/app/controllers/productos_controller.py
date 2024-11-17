@@ -8,7 +8,6 @@ class ProductoController:
         pass
 
     def leer_productos(self):
-        print("oa")
         try:
             productos = supabase.table("producto").select("*").execute()
             return productos.data
@@ -28,9 +27,9 @@ class ProductoController:
             raise HTTPException(status_code=500, detail=f"Error al leer el producto: {str(e)}")
 
 
-    def insertar_producto(self, producto: ProductoData): 
+    def insertar_producto(self, producto: ProductoData, cantidad: int):
         try:
-            nuevo_producto = supabase.table("producto").insert({
+            response = supabase.table("producto").insert({
                 "nombre": producto.nombre,
                 "descripcion": producto.descripcion,
                 "precio": producto.precio,
@@ -39,12 +38,26 @@ class ProductoController:
                 "id_categoria": producto.id_categoria,
                 "id_estado": producto.id_estado
             }).execute()
-            return nuevo_producto
     
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error al insertar el producto: {str(e)}")
+        nuevo_producto = response.data[0]
+        
+        self.crear_inventario(nuevo_producto["id_producto"], cantidad)
+        return nuevo_producto
     
-    
+    def crear_inventario(self, id_producto, cantidad):
+        try:
+            # Inserción del inventario
+            response = supabase.table("inventario").insert({
+                "cantidad": cantidad,
+                "id_producto": id_producto
+            }).execute()
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error al crear el inventario: {str(e)}")
+            
+        
     def actualizar_producto(self, id: int, producto : ProductoData):
         resultado = supabase.table("producto").select("*").eq("id_producto", id).execute()
         
