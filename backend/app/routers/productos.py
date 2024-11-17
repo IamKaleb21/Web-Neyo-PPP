@@ -20,9 +20,8 @@ def obtener_producto(id: int):
 
 
 @productos.post("/insertar/")
-def insertar_producto(producto : ProductoData):
-    return producto_controller.insertar_producto(producto)
-
+async def insertar_producto(producto: ProductoData, cantidad: int):
+    return producto_controller.insertar_producto(producto, cantidad)
 
 @productos.put("/actualizar/{id}")
 def actualizar_producto(id : int , producto : ProductoData):
