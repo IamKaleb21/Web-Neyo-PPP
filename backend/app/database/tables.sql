@@ -175,3 +175,25 @@ CONSTRAINT fk_detalle_carrito FOREIGN KEY (id_Carrito)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
+
+CREATE TABLE historial_pedido(
+	id_historial_pedido SERIAL,
+	id_Pedido SERIAL,
+	id_estado_actual SERIAL,
+	id_estado_anterior SERIAL,
+	fecha_cambio TIMESTAMP DEFAULT NOW(),
+	CONSTRAINT pk_historial_pedido PRIMARY KEY (id_historial_pedido),
+	CONSTRAINT fk_historial_pedido_pedido FOREIGN KEY (id_Pedido)
+		REFERENCES pedido (id_Pedido)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE,
+	CONSTRAINT fk_historial_pedido_estado_actual FOREIGN KEY (id_estado_actual)
+		REFERENCES estado_pedido (id_Estado_pedido)
+		ON DELETE SET NULL
+		ON UPDATE CASCADE,
+	CONSTRAINT fk_historial_pedido_estado_anterior FOREIGN KEY (id_estado_anterior)
+		REFERENCES estado_pedido (id_Estado_pedido)
+		ON DELETE SET NULL
+		ON UPDATE CASCADE
+	
+);
