@@ -202,3 +202,12 @@ class PedidoController:
         except Exception as e:
             raise HTTPException(status_code=500, 
             detail=f"Error al actualizar el historial del pedido: {str(e)}")
+    
+    def existe_pedido(self, id_pedido):
+        try:
+            response = supabase.table("pedido").select("*").eq("id_pedido", id_pedido).execute()
+            if response.data != None and len(response.data) > 0:
+                return True
+            return False
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error al verificar el pedido: {str(e)}")
