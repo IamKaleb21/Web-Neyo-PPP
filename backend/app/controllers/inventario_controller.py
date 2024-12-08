@@ -8,10 +8,15 @@ class InventarioController:
     
     def obtener_inventario(self, id_producto):
         try: 
+            # Verificar existencia del registro
             response = supabase.table("inventario").select("cantidad").eq("id_producto", id_producto).execute()
-            inventario = response.data[0]
             
-            return inventario["cantidad"]
+            if response.data == None or len(response.data) == 0:
+                print("No hay inventario")
+                self.crear_inventario(id_producto, 0)
+                return float(0)
+                
+            return response.data[0]["cantidad"]
         
         
         except Exception as e:
@@ -20,10 +25,16 @@ class InventarioController:
     
     def crear_inventario(self, id_producto, cantidad):
         try:
+            response_producto = supabase.table("producto").select("*").eq("id_producto", id_producto).execute()
+            if response_producto.data == None or len(response_producto.data) == 0:
+                raise HTTPException(status_code=404, detail="El producto no fue encontrado")
+            
             response = supabase.table("inventario").insert({
                 "id_producto": id_producto,
                 "cantidad": cantidad
             }).execute()
+            
+            return response.data[0]
             
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error al crear el inventario: {str(e)}")

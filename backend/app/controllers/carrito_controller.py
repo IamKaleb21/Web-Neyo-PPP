@@ -20,6 +20,8 @@ class CarritoController:
                 "id_usuario": id_usuario
             }).execute()
             
+            return response.data[0]
+            
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error al crear el inventario: {str(e)}")
     
@@ -29,7 +31,8 @@ class CarritoController:
             
             # Validar si response.data no tiene valores
             if not response.data or len(response.data) == 0:
-                raise HTTPException(status_code=404, detail="No se encontró un carrito para el usuario especificado")
+                carrito = self.crear_carrito(id_usuario)
+                return carrito["id_carrito"]
             
             carrito = response.data[0]
             
@@ -76,5 +79,14 @@ class CarritoController:
             return response.data
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error al quitar del carrito: {str(e)}")
+    
+    def vaciar_carrito(self, id_usuario):
+        try:
+            id_carrito = self.obtener_id(id_usuario)
+            response = supabase.table("detalle_carrito").delete().eq("id_carrito", id_carrito).execute()
+            
+            return response.data
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error al vaciar el carrito: {str(e)}")
     
     # TODO: Validar que no se pueda agregar un producto que ya está en el carrito
