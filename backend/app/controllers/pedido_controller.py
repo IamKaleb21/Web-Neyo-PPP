@@ -43,9 +43,7 @@ class PedidoController:
                 inventario = inventario_controller.obtener_inventario(item["id_producto"])
                 if inventario < item["cantidad"]:
                     raise HTTPException(status_code=400, 
-        detail=f"No hay suficiente inventario del producto con id: 
-        {item['id_producto']}. Inventario actual: {inventario}. Cantidad solicitada: 
-        {item['cantidad']}")
+                detail=f"No hay suficiente inventario del producto con id: {item['id_producto']}. Inventario actual: {inventario}. Cantidad solicitada: {item['cantidad']}")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error al verificar el inventario: {str(e)}")
             
