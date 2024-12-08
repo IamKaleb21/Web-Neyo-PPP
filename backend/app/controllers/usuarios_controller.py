@@ -3,6 +3,10 @@ from fastapi import HTTPException
 from Schemas.Usuario import UsuarioData
 from datetime import datetime
 
+from controllers.carrito_controller import CarritoController
+
+carrito_controller = CarritoController()
+
 # Crud de Usuarios 
 def leer_usuarios_funcion():
     try:
@@ -26,50 +30,98 @@ def leer_usuario_funcion(id):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f'Error al procesar la solicitud : {str(e)}')
     
+
 def ingresar_usuario_funcion(user: UsuarioData):
-    try: 
-        # Verificar si el usuario ya existe
-        usuario_existente = supabase.table("usuario").select("id_usuario").eq("usuario", user.usuario).execute()
-        if usuario_existente.data :
-            raise HTTPException(status_code=400, detail="Usuario ya existe")
-        # Si no existe, inserta el nuevo usuario
-        usuario = supabase.table("usuario").insert({
-            "usuario": user.usuario,
-            "clave": user.clave,
-            "nombre": user.nombre,
-            "apellido": user.apellido,
-            "departamento" : user.departamento,
-            "provincia" : user.provincia,
-            "distrito" : user.distrito,
-            "direccion" : user.direccion,
-            "correo" : user.correo,
-            "id_rol" : user.id_rol.value
-        }).execute()
-        usuario_data = usuario.data[0]
-        supabase.table("telefono").insert({
-            "numero":user.telefono,
-            "id_usuario": usuario_data['id_usuario']
-        }).execute()
-        
-        # Ingresas a un nuevo usuario en Auth cuando te registras
-        usuarioAut=supabase.auth.sign_up( 
-            {
-                "email" : user.correo,
-                "password" : user.clave,
-                "options" : {
-                    "data" : {
-                        "Nombre" : user.nombre,
-                        "Apellido" : user.apellido,
-                        "Departamento" : user.departamento,
-                        "Provincia" : user.provincia,
-                        "Distrito" : user.distrito,
-                    }
+
+    user.fecha_registro = datetime.now()
+    usuario = supabase.table("usuario").insert({
+        "usuario": user.usuario,
+        "clave": user.clave,
+        "nombre": user.nombre,
+        "apellido": user.apellido,
+        "fecha_registro" : user.fecha_registro.strftime("%Y-%m-%dT%H:%M:%S"),
+        "departamento" : user.departamento,
+        "provincia" : user.provincia,
+        "distrito" : user.distrito,
+        "direccion" : user.direccion,
+        "correo" : user.correo,
+        "id_rol" : user.id_rol.value
+    }).execute()
+    usuario_data = usuario.data[0]
+    print(usuario_data['id_usuario'])
+    
+    carrito_controller.crear_carrito(usuario_data["id_usuario"])
+    
+    # Ingresas a un nuevo usuario en Auth cuando te registras
+    usuarioAut=supabase.auth.sign_up( 
+        {
+            "email" : user.correo,
+            "password" : user.clave,
+            "options" : {
+                "data" : {
+                    "Nombre" : user.nombre,
+                    "Apellido" : user.apellido,
+                    "Departamento" : user.departamento,
+                    "Provincia" : user.provincia,
+                    "Distrito" : user.distrito,
                 }
             }
-        )
-        usuarioFinal = (supabase.table("usuario").update({"principal": usuarioAut.user.id}).eq("id_usuario", usuario_data['id_usuario']).execute())
-        
-        return usuarioFinal
+        }
+    )
+    usuarioFinal = (
+    supabase.table("usuario")
+    .update({"principal": usuarioAut.user.id})
+    .eq("id_usuario", usuario_data['id_usuario'])
+    .execute())
+    
+    return usuarioFinal
+
+def actualizar_usuario_funcion(id: int, user : UsuarioData):
+    try:
+        user.fecha_registro = datetime.now()
+        bandera = False
+        id_usuarios = supabase.table("usuario").select("id_usuario").execute()
+        for usuario in id_usuarios.data:
+            if id == usuario["id_usuario"] :
+                bandera = True
+        if bandera == True : 
+            usuario_actualizado = supabase.table("usuario").update({
+                "usuario": user.usuario,
+                "clave": user.clave,
+                "nombre": user.nombre,
+                "apellido": user.apellido,
+                "departamento" : user.departamento,
+                "provincia" : user.provincia,
+                "distrito" : user.distrito,
+                "direccion" : user.direccion,
+                "correo" : user.correo,
+                "id_rol" : user.id_rol.value
+            }).execute()
+            usuario_data = usuario.data[0]
+            supabase.table("telefono").insert({
+                "numero":user.telefono,
+                "id_usuario": usuario_data['id_usuario']
+            }).execute()
+            
+            # Ingresas a un nuevo usuario en Auth cuando te registras
+            usuarioAut=supabase.auth.sign_up( 
+                {
+                    "email" : user.correo,
+                    "password" : user.clave,
+                    "options" : {
+                        "data" : {
+                            "Nombre" : user.nombre,
+                            "Apellido" : user.apellido,
+                            "Departamento" : user.departamento,
+                            "Provincia" : user.provincia,
+                            "Distrito" : user.distrito,
+                        }
+                    }
+                }
+            )
+            usuarioFinal = (supabase.table("usuario").update({"principal": usuarioAut.user.id}).eq("id_usuario", usuario_data['id_usuario']).execute())
+            
+            return usuarioFinal
     # Manejo específico de HTTPException
     except HTTPException as http_err:
         raise http_err

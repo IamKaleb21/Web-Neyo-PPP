@@ -5,6 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers.productos import productos
 from routers import auth
 from routers.Comentario import comentario
+from routers.carrito import carrito
+from routers.inventario import inventario
+from routers.pedido import pedido
 
 # Inicializa la aplicación FastAPI
 app = FastAPI()
@@ -28,6 +31,9 @@ app.include_router(usuarios)
 app.include_router(productos)
 app.include_router(auth.auth_router)
 app.include_router(comentario)
+app.include_router(carrito)
+app.include_router(inventario)
+app.include_router(pedido)
 @app.get("/")
 
 def read_usuarios():

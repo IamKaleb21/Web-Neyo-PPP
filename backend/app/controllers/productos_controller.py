@@ -1,6 +1,9 @@
 from config.conexion import supabase
 from fastapi import HTTPException
 from Schemas.Producto import ProductoData
+from controllers.inventario_controller import InventarioController
+
+inventario_controller = InventarioController()
 
 class ProductoController:
     def __init__(self):
@@ -21,11 +24,16 @@ class ProductoController:
             producto = supabase.table("producto").select("*").eq("id_producto", id).execute()
             if not producto.data:
                 raise HTTPException(status_code=404, detail="Producto no encontrado")
-            return producto.data
+            inventario = inventario_controller.obtener_inventario(id)
+            producto = producto.data[0]
+            
+            producto["cantidad"] = inventario
+            
+            return producto
         
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error al leer el producto: {str(e)}")
-
+    
 
     def insertar_producto(self, producto: ProductoData, cantidad: int):
         try:
@@ -43,20 +51,10 @@ class ProductoController:
             raise HTTPException(status_code=500, detail=f"Error al insertar el producto: {str(e)}")
         nuevo_producto = response.data[0]
         
-        self.crear_inventario(nuevo_producto["id_producto"], cantidad)
+        inventario_controller.crear_inventario(nuevo_producto["id_producto"], cantidad)
+        
         return nuevo_producto
-    
-    def crear_inventario(self, id_producto, cantidad):
-        try:
-            # Inserción del inventario
-            response = supabase.table("inventario").insert({
-                "cantidad": cantidad,
-                "id_producto": id_producto
-            }).execute()
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error al crear el inventario: {str(e)}")
-            
+        
         
     def actualizar_producto(self, id: int, producto : ProductoData):
         resultado = supabase.table("producto").select("*").eq("id_producto", id).execute()
