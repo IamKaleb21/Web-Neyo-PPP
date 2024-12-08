@@ -197,3 +197,39 @@ CREATE TABLE historial_pedido(
 		ON UPDATE CASCADE
 	
 );
+
+CREATE TABLE metodo_pago(
+	id_metodo_pago SERIAL,
+	nombre VARCHAR(30) NOT NULL,
+	descripcion VARCHAR(100),
+	CONSTRAINT pk_metodo_pago PRIMARY KEY (id_metodo_pago)
+);
+
+CREATE TABLE estado_pago(
+	id_estado_pago SERIAL,
+	valor VARCHAR(30) NOT NULL,
+	CONSTRAINT pk_estado_pago PRIMARY KEY (id_estado_pago)
+);
+
+CREATE TABLE pago(
+	id_pago SERIAL,
+	monto NUMERIC(8,2) NOT NULL,
+	fecha_registro TIMESTAMP DEFAULT NOW(),
+	id_pedido SERIAL,
+	id_metodo_pago SERIAL,
+	id_estado_pago SERIAL,
+	CONSTRAINT pk_pago PRIMARY KEY (id_pago),
+	CONSTRAINT fk_pago_pedido FOREIGN KEY (id_pedido)
+		REFERENCES pedido (id_Pedido)
+		ON DELETE SET NULL
+		ON UPDATE CASCADE,
+	CONSTRAINT fk_pago_metodo_pago FOREIGN KEY (id_metodo_pago)
+		REFERENCES metodo_pago (id_metodo_pago)
+		ON DELETE SET NULL
+		ON UPDATE CASCADE,
+	CONSTRAINT fk_pago_estado_pago FOREIGN KEY (id_estado_pago)
+		REFERENCES estado_pago (id_estado_pago)
+		ON DELETE SET NULL
+		ON UPDATE CASCADE
+	
+);
