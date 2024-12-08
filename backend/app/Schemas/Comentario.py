@@ -6,4 +6,4 @@ class ComentarioData(BaseModel) :
     contenido: str
     valoracion: str
     id_producto: int
-    id_usuario: int
+

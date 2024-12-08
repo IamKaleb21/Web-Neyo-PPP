@@ -12,12 +12,11 @@ class UsuarioData(BaseModel):
     clave: str  
     nombre: str  
     apellido: str  
-    fecha_registro: Optional[datetime] = None  
     departamento: str
     provincia: str  
     distrito: str  
     direccion: str  
     correo: EmailStr
     id_rol : RolUsuario = RolUsuario.prueba
-
+    telefono : str
 
