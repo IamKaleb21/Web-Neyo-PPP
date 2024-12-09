@@ -3,7 +3,7 @@ load_dotenv()
 
 import os
 from supabase import create_client
-
+import uuid
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
 key_admin = os.environ.get("SUPABASE_SERVICE_KEY")
@@ -39,3 +39,6 @@ admin = supabaseAdmin.auth.admin
 #     .execute()
 # )
 # print(response)
+# uuid = uuid.UUID("32414682-def1-4a8c-a8ad-66fe818e4b12")
+# usuario = supabase.table("usuario").select("*").eq("principal",uuid).execute()
+# print(f'ID dsadasdsa',usuario.data[0]["id_usuario"])
