@@ -8,6 +8,7 @@ from routers.Comentario import comentario
 from routers.carrito import carrito
 from routers.inventario import inventario
 from routers.pedido import pedido
+from routers.pago import pago
 
 # Inicializa la aplicación FastAPI
 app = FastAPI()
@@ -34,6 +35,7 @@ app.include_router(comentario)
 app.include_router(carrito)
 app.include_router(inventario)
 app.include_router(pedido)
+app.include_router(pago)
 @app.get("/")
 
 def read_usuarios():
